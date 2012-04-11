@@ -1,0 +1,164 @@
+!!!
+%html{:lang => "en"}
+  %head
+    %meta{:charset => "utf-8"}
+    %meta{"http-equiv" => "X-UA-Compatible", :content => "IE=edge,chrome=1"}
+    %meta{:name => "viewport", :content => "width=device-width, initial-scale=1, maximum-scale=1"}
+    %title= content_for?(:title) ? yield(:title) : "FuzzyNote"
+    %meta{:content => "Grow Your Ideas", :name => "description"}
+    %meta{:content => "lightyrs", :name => "author"}
+    = stylesheet_link_tag    "editor", :media => "all"
+    = javascript_include_tag "editor"
+    = csrf_meta_tags
+    = yield(:head)
+    :javascript
+      $(document).ready(function() {
+        $('[title]').attr('title', function(i, title) {
+            $(this).data('title', title).removeAttr('title');
+        });
+        
+        $('a[href]').attr('href', function(i, title) {
+            $(this).data('href', title).removeAttr('href').attr('data-href', title);
+        });
+        $("ul.tabs").each(function() {
+          var hash = $(this).children("li.current").children("a").data("href");
+          var tab = $(this).siblings("div.tabs").children(hash);
+          if(tab.length>0) {
+            tab.addClass("current");
+          } else {
+            tab = $(this).siblings("div.tabs").children("div.tab:first-child");
+            href = "#" + tab.attr("id");
+            $(this).children("li.current").removeClass("current");
+            $('li a[data-href="'+href+'"]', this).parent("li").addClass("current");
+            tab.addClass("current");
+          }
+        });
+        
+        $('a').bind("tap", function(e) {
+          
+          if(!$(this).data("href")) {
+            return false;
+          }
+          var element = $( $(this).data("href") );
+          
+          if($(this).parents("ul.tabs").length>0) {
+            var tab = $("div.tabs > " + $(this).data("href"));
+            if(tab.length>0) {
+              $(this).parents("ul.tabs, .section").children("div.tabs").children(".tab.current").removeClass("current");
+              $(this).parents("ul.tabs, .section").children("div.tabs").children($(this).data("href")).addClass("current");
+              $(this).parents("ul.tabs").children("li.current").removeClass("current");
+              $(this).parents("li").addClass("current");
+            } else {
+              //$.info({desc: "The hash "+$(this).data("href")+" is not valid"});
+              alert("Error")
+            }
+          }
+          e.preventDefault();
+        });
+        
+        //Documentation
+        $("#docs ul.tabs li a").bind("tap", function() {
+          if(!$(this).hasAttr("data-loaded") && $(this).data("href")!="#introduction") {
+            var element = $( $(this).data("href") );
+            var reference = "reference/" + $(this).data("href").replace(/^#docs_+/, "") + ".md";
+            $(this).attr("data-loaded", "true");
+                
+            $.get(reference + "?time=" + (new Date()).getTime(), function(data){
+              var docs = new Showdown.converter();
+              
+              var text = $(docs.makeHtml(data));
+              text.find('pre').addClass('prettyprint');
+              text.find('p code').addClass('prettyprint');
+              text.find('code').each(function() {
+                  $(this).html(prettyPrintOne($(this).html()));
+              });
+              element.html(text); 
+              $(document).scrollTop(0);
+            }).error(function() {
+              $.notification( 
+                {
+                  title: 'Reference was not found',
+                  content: 'The reference ' + reference + " was not found",
+                  error: true
+                }
+              );  
+            });
+          }
+        })
+      });
+
+    :css
+      #docs {
+        display: block!important;
+      }
+
+  %body.feather
+    #docs.section.padding{:title => "Documentation"}
+      %ul.tabs
+        %li.current
+          %a{:href => "#introduction"} Introduction
+        %li
+          %a{:href => "#docs_getting_started"} Getting started
+        %li
+          %a{:href => "#docs_navigation"} Navigation
+        %li
+          %a{:href => "#docs_grid_layout_carton"} Layout, Grid & Cartons
+        %li
+          %a{:href => "#docs_welcome_screen"} Welcome screen
+        %li
+          %a{:href => "#docs_themes"} Themes
+        %li
+          %a{:href => "#docs_ui"} UI elements
+        %li
+          %a{:href => "#docs_cache"} Update System
+        %li
+          %a{:href => "#docs_notifications"} Notifications
+        %li
+          %a{:href => "#docs_modals"} Modals
+        %li
+          %a{:href => "#docs_tooltips"} Tooltips
+        %li
+          %a{:href => "#docs_animations"} Animations
+        %li
+          %a{:href => "#docs_charts"} Charts
+        %li
+          %a{:href => "#docs_editor"} Editor
+        %li
+          %a{:href => "#docs_gallery"} Gallery
+        %li
+          %a{:href => "#docs_icons"} Icons
+        %li
+          %a{:href => "#docs_tables"} Tables
+        %li
+          %a{:href => "#docs_error_pages"} Error pages
+        %li
+          %a{:href => "#docs_location"} Maps & Location
+        %li
+          %a{:href => "#docs_iphone_app"} iPhone web app
+        %li
+          %a{:href => "#docs_license"} Licenses & Attributions
+      .tabs
+        #introduction.tab
+          %h1 Introduction
+          %p Pastel is filled with features. By time it would probably be possible to figure anything out by looking at the included demo - that's just not very user friendly. For that reason I decided to write some thorough documentation - which can be read on this page. If you decide to purchase Pastel, all documentation will be available as separate Markdown files too.
+          %p If you are having trouble with some aspects and don't think the documentation answers them clearly, don't hesitate contacting me. But please at least skim the included documentation, it's written for you!
+        #docs_getting_started.tab
+        #docs_navigation.tab
+        #docs_grid_layout_carton.tab
+        #docs_welcome_screen.tab
+        #docs_themes.tab
+        #docs_ui.tab
+        #docs_notifications.tab
+        #docs_tooltips.tab
+        #docs_modals.tab
+        #docs_error_pages.tab
+        #docs_license.tab
+        #docs_animations.tab
+        #docs_icons.tab
+        #docs_editor.tab
+        #docs_tables.tab
+        #docs_gallery.tab
+        #docs_location.tab
+        #docs_charts.tab
+        #docs_iphone_app.tab
+        #docs_cache.tab

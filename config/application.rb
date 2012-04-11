@@ -61,6 +61,9 @@ module FuzzyNote
     # Enable the asset pipeline
     config.assets.enabled = true
 
+    # Declare asset manifests
+    config.assets.precompile += ['editor.js', 'application.js', 'editor.css', 'application.css']
+
     # Version of your assets, change this if you want to expire all your assets
     config.assets.version = '1.0'
   end
